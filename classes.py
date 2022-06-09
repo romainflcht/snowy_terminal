@@ -1,11 +1,16 @@
 from os import get_terminal_size
+from platform import system
 from random import randint
 from time import sleep, time
 # Package built-in python3.8
 
 # Text style.
-normal_text = '\033[0m'
-bold_text = '\033[1m'
+if system() in ('Linux', 'Darwin'):
+    normal_text = '\033[0m'
+    bold_text = '\033[1m'
+else:
+    normal_text = ''
+    bold_text = ''
 
 
 class Screen:
@@ -19,7 +24,7 @@ class Screen:
         try:
             terminal_size = get_terminal_size()
         except OSError as _:
-            raise OSError(f'{bold_text}Try to run this scrpit into a terminal, not into an IDE console.{normal_text}')
+            raise OSError(f'{bold_text}Try to run this script into a terminal, not into an IDE console.{normal_text}')
 
         self.nb_snow = nb_snow
         self.screen = [[' ' for _ in range(terminal_size.columns)] for _ in range(terminal_size.lines)]
@@ -31,7 +36,7 @@ class Screen:
         :return: Return the index_item line.
         """
         if index_item >= len(self.screen):
-            return None
+            return []
 
         return self.screen[index_item]
 
@@ -56,9 +61,9 @@ class Screen:
             screen_to_text += '\n'
 
         # Copyright - romain_flcht
-        screen_to_text += f'\n{bold_text}Snowy terminal{normal_text} by {bold_text}romain_flcht{normal_text} - ' \
-                          f'Render time : {bold_text}{time() - render_time}s{normal_text} - ' \
-                          f'Press {bold_text}Ctrl + Z{normal_text} to stop...'
+        screen_to_text += f'\n{bold_text}Snowy terminal{normal_text} by {bold_text}romainflcht{normal_text} - ' \
+                          f'Render time : {bold_text}{(time() - render_time):2f}s{normal_text} - ' \
+                          f'Press {bold_text}Ctrl + C{normal_text} to exit...'
         return screen_to_text
 
     def set_snow_layer(self) -> None:
@@ -87,16 +92,20 @@ class Screen:
         Start the animation forever - Press Crtl + Z to stop it...
         """
         while True:
-            for snowflake in self.snow_on_screen:
-                # Move every snowflake on screen
-                snowflake.move()
+            try:
+                for snowflake in self.snow_on_screen:
+                    # Move every snowflake on screen
+                    snowflake.move()
 
-            # Put another layer and display the frame.
-            self.set_snow_layer()
-            print(self)
+                # Put another layer and display the frame.
+                self.set_snow_layer()
+                print(self)
 
-            # 0.2 sec between each frame for a slow falling.
-            sleep(0.2)
+                # 0.2 sec between each frame for a slow falling.
+                sleep(0.2)
+            except KeyboardInterrupt:
+                print('\n\n\nLicenced - romainflcht\nGoodbye :D.', end='\n\n\n')
+                exit()
 
 
 class Snowflake:
